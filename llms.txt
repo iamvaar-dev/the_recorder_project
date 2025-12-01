@@ -1,0 +1,38 @@
+# The Recorder Project
+
+## Project Summary
+"The Recorder Project" is an Electron-based desktop application designed to create cinematic screen recordings. It automates post-production tasks like zooming in on cursor actions and smoothing mouse movements, allowing users to create professional-quality product demos and tutorials with minimal effort. It aims to be an open-source alternative to tools like Screen Studio.
+
+## Architecture Overview
+The application follows a standard Electron architecture with a main process and a renderer process.
+
+- **Main Process (`electron/main.ts`)**: Handles native OS interactions, window management, tray icons, global shortcuts, and FFmpeg video processing.
+- **Renderer Process (`src/`)**: Built with React and TypeScript. It handles the UI, recording logic, and real-time composition of the video stream.
+- **Engine (`src/engine/`)**:
+    - `Composer.ts`: The core engine that takes the raw screen stream and applies real-time effects like mouse tracking, smoothing, and zooming. It draws these frames to a canvas which is then recorded.
+    - `Recorder.ts`: Manages the `MediaRecorder` API to capture the composed stream and save it as a video blob.
+
+## Key Files & Directories
+
+- `electron/main.ts`: Main process entry point. Handles app lifecycle, IPC, and native features.
+- `src/App.tsx`: Main UI component. Manages views (Home, Source Selector, Recording, Editor).
+- `src/engine/Composer.ts`: Logic for "cinematic" effects. Handles canvas drawing, zoom calculations, and mouse interpolation.
+- `src/engine/Recorder.ts`: Wrapper around `MediaRecorder`.
+- `src/components/VideoEditor.tsx`: Simple video editor for post-recording adjustments.
+- `src/store/useAppStore.ts`: Global state management using Zustand.
+
+## Tech Stack
+
+- **Runtime**: Electron
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Ant Design, CSS Modules (or standard CSS), Framer Motion (animations)
+- **State Management**: Zustand
+- **Video Processing**: FFmpeg (via `fluent-ffmpeg` and `ffmpeg-static` in the main process)
+- **Input Monitoring**: `uiohook-napi` (for global mouse/keyboard events)
+
+## Development Guidelines
+
+- **State Management**: Use Zustand for global UI state.
+- **IPC**: Use `ipcRenderer.invoke` for async tasks (like getting sources or saving files) and `ipcRenderer.send`/`on` for event-driven communication (like mouse events).
+- **Performance**: The `Composer` loop runs on `requestAnimationFrame`. Keep this loop efficient to maintain 60FPS. Avoid heavy computations in the render loop.
+- **Video Processing**: Heavy video operations (encoding, filtering) should be offloaded to the main process or a worker to avoid blocking the UI.
